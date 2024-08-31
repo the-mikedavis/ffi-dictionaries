@@ -1,5 +1,5 @@
 {
-  description = "A Hunspell-like spell-checking library in Rust";
+  description = "FFI bindings for Hunspell & Nuspell";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
