@@ -13,7 +13,7 @@ extern "C" {
 }
 
 pub struct Nuspell {
-    inner: *mut NuspellDictionary,
+    inner: *mut NuspellHandle,
 }
 
 impl Nuspell {
@@ -41,16 +41,71 @@ impl Drop for Nuspell {
 unsafe impl Send for Nuspell {}
 unsafe impl Sync for Nuspell {}
 
+enum HunspellHandle {}
+
+#[link(name = "nuspell")]
+extern "C" {
+    fn Hunspell_create(aff_path: *const c_char, dic_path: *const c_char) -> *mut HunspellHandle;
+
+    fn Hunspell_destroy(dict: *mut HunspellHandle);
+
+    fn Hunspell_spell(dict: *const HunspellHandle, word: *const c_char) -> c_int;
+
+}
+
+pub struct Hunspell {
+    inner: *mut HunspellHandle,
+}
+
+impl Hunspell {
+    pub fn new(aff_path: &OsStr, dic_path: &OsStr) -> Hunspell {
+        let aff_path = CString::new(aff_path.as_encoded_bytes()).unwrap();
+        let dic_path = CString::new(dic_path.as_encoded_bytes()).unwrap();
+        unsafe {
+            Hunspell {
+                inner: Hunspell_create(aff_path.as_ptr(), dic_path.as_ptr()),
+            }
+        }
+    }
+
+    pub fn spell(&self, word: &str) -> bool {
+        let word = CString::new(word).unwrap();
+        unsafe { Hunspell_spell(self.inner.cast_const(), word.as_ptr()) != 0 }
+    }
+}
+
+impl Drop for Hunspell {
+    fn drop(&mut self) {
+        unsafe { Hunspell_destroy(self.inner) };
+    }
+}
+
+unsafe impl Send for Hunspell {}
+unsafe impl Sync for Hunspell {}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use std::path::PathBuf;
 
     #[test]
-    fn kick_the_tires() {
+    fn kick_the_tires_nuspell() {
         let manifest_path = PathBuf::from(std::env::var_os("CARGO_MANIFEST_DIR").unwrap());
         let aff_path = manifest_path.join("vendor/en_US/en_US.aff");
         let dict = Nuspell::new(aff_path.as_os_str());
+
+        assert!(dict.spell("hello"));
+        assert!(dict.spell("world"));
+
+        assert!(!dict.spell("exmaple"));
+    }
+
+    #[test]
+    fn kick_the_tires_hunspell() {
+        let manifest_path = PathBuf::from(std::env::var_os("CARGO_MANIFEST_DIR").unwrap());
+        let aff_path = manifest_path.join("vendor/en_US/en_US.aff");
+        let dic_path = manifest_path.join("vendor/en_US/en_US.dic");
+        let dict = Hunspell::new(aff_path.as_os_str(), dic_path.as_os_str());
 
         assert!(dict.spell("hello"));
         assert!(dict.spell("world"));

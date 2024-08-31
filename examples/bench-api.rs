@@ -1,18 +1,18 @@
 use std::{hint::black_box, path::PathBuf};
 
 use brunch::Bench;
-use nuspell::Dictionary;
+use ffi_dictionaries::Nuspell;
 use once_cell::sync::OnceCell;
 
 const SAMPLES: u32 = 500_000;
 
-fn en_us() -> &'static Dictionary {
-    static EN_US: OnceCell<Dictionary> = OnceCell::new();
+fn en_us() -> &'static Nuspell {
+    static EN_US: OnceCell<Nuspell> = OnceCell::new();
     EN_US.get_or_init(|| {
         let manifest_path = PathBuf::from(std::env::var_os("CARGO_MANIFEST_DIR").unwrap());
         let aff_path = manifest_path.join("vendor/en_US/en_US.aff");
 
-        Dictionary::new(aff_path.as_os_str())
+        Nuspell::new(aff_path.as_os_str())
     })
 }
 
@@ -22,7 +22,7 @@ brunch::benches!(
         let manifest_path = PathBuf::from(std::env::var_os("CARGO_MANIFEST_DIR").unwrap());
         let aff_path = manifest_path.join("vendor/en_US/en_US.aff");
 
-        Dictionary::new(aff_path.as_os_str())
+        Nuspell::new(aff_path.as_os_str())
     }),
     Bench::spacer(),
     // Checking
