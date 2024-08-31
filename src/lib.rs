@@ -38,6 +38,9 @@ impl Drop for Dictionary {
     }
 }
 
+unsafe impl Send for Dictionary {}
+unsafe impl Sync for Dictionary {}
+
 #[cfg(test)]
 mod tests {
     use super::*;
