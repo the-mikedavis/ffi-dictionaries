@@ -1,7 +1,7 @@
 use std::{hint::black_box, path::PathBuf};
 
 use brunch::Bench;
-use nuspell_rs::Dictionary;
+use nuspell::Dictionary;
 use once_cell::sync::OnceCell;
 
 const SAMPLES: u32 = 500_000;

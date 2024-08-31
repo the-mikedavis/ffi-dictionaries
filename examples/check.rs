@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 use std::time::Instant;
 
-use nuspell_rs::Dictionary;
+use ffi_dictionaries::Nuspell;
 
 fn main() {
     let mut args = std::env::args().skip(1);
@@ -17,7 +17,7 @@ fn main() {
     let aff_path = manifest_path.join("vendor/en_US/en_US.aff");
 
     let now = Instant::now();
-    let dict = Dictionary::new(aff_path.as_os_str());
+    let dict = Nuspell::new(aff_path.as_os_str());
     println!("Compiled the dictionary in {}ms", now.elapsed().as_millis());
 
     let now = Instant::now();

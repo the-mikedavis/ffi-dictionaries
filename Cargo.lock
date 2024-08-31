@@ -28,7 +28,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5f3464c10bbdaf3c0b4c9bdecb477d4cad8a6916454066dfe4f28c491dbb335b"
 
 [[package]]
-name = "nuspell-rs"
+name = "ffi-dictionaries"
 version = "0.1.0"
 dependencies = [
  "brunch",
