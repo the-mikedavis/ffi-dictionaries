@@ -2,7 +2,6 @@ use std::ffi::{c_char, c_int, CString, OsStr};
 
 enum NuspellHandle {}
 
-#[link(name = "nuspell")]
 extern "C" {
     fn Nuspell_create(aff_path: *const c_char) -> *mut NuspellHandle;
 
@@ -43,7 +42,6 @@ unsafe impl Sync for Nuspell {}
 
 enum HunspellHandle {}
 
-#[link(name = "nuspell")]
 extern "C" {
     fn Hunspell_create(aff_path: *const c_char, dic_path: *const c_char) -> *mut HunspellHandle;
 
