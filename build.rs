@@ -24,4 +24,11 @@ fn main() {
         // My stuff
         .file(src_path.join("interface.cxx"))
         .compile("nuspell");
+
+    println!("cargo:rustc-link-lib=static=nuspell");
+    // Link to libc++
+    println!("cargo:rustc-link-lib=stdc++");
+    // Link to ICU4C, specifically icu-cu which Nuspell mentions in
+    // `nuspell.pc.in`.
+    println!("cargo:rustc-link-lib=icuuc");
 }
