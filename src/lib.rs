@@ -1,4 +1,4 @@
-use std::ffi::{c_char, c_int, CString};
+use std::ffi::{c_char, c_int, CString, OsStr};
 
 enum NuspellDictionary {}
 
@@ -17,8 +17,8 @@ pub struct Dictionary {
 }
 
 impl Dictionary {
-    pub fn new(affpath: &str) -> Self {
-        let affpath = CString::new(affpath).unwrap();
+    pub fn new(affpath: &OsStr) -> Self {
+        let affpath = CString::new(affpath.as_encoded_bytes()).unwrap();
         unsafe {
             Self {
                 inner: Dictionary_create(affpath.as_ptr()),
@@ -35,5 +35,23 @@ impl Dictionary {
 impl Drop for Dictionary {
     fn drop(&mut self) {
         unsafe { Dictionary_destroy(self.inner) };
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::path::PathBuf;
+
+    #[test]
+    fn kick_the_tires() {
+        let manifest_path = PathBuf::from(std::env::var_os("CARGO_MANIFEST_DIR").unwrap());
+        let aff_path = manifest_path.join("vendor/en_US/en_US.aff");
+        let dict = Dictionary::new(aff_path.as_os_str());
+
+        assert!(dict.spell("hello"));
+        assert!(dict.spell("world"));
+
+        assert!(!dict.spell("exmaple"));
     }
 }
