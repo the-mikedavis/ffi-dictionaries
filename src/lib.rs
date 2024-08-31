@@ -8,7 +8,7 @@ extern "C" {
 
     fn Dictionary_destroy(dict: *mut NuspellDictionary);
 
-    fn Dictionary_spell(dict: *mut NuspellDictionary, word: *const c_char) -> c_int;
+    fn Dictionary_spell(dict: *const NuspellDictionary, word: *const c_char) -> c_int;
 
 }
 
@@ -28,7 +28,7 @@ impl Dictionary {
 
     pub fn spell(&self, word: &str) -> bool {
         let word = CString::new(word).unwrap();
-        unsafe { Dictionary_spell(self.inner, word.as_ptr()) != 0 }
+        unsafe { Dictionary_spell(self.inner.cast_const(), word.as_ptr()) != 0 }
     }
 }
 
