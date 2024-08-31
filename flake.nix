@@ -38,12 +38,12 @@
             clang-tools
             cmake
             gnumake
-            icu
             libcxx
+            icu74
             gdb
           ];
           CPATH = lib.makeSearchPathOutput "dev" "include" nativeBuildInputs;
-          LD_LIBRARY_PATH = lib.makeLibraryPath [pkgs.stdenv.cc.cc.lib];
+          LD_LIBRARY_PATH = lib.makeLibraryPath [pkgs.stdenv.cc.cc.lib pkgs.icu74];
           RUST_BACKTRACE = "1";
         }
       );
