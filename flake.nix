@@ -29,6 +29,7 @@
                 "rust-src"
                 "clippy"
                 "llvm-tools-preview"
+                "miri"
               ];
             })
             rust-analyzer
