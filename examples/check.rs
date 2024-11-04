@@ -13,7 +13,7 @@ impl Dictionary {
     fn new(provider: &str) -> Self {
         match provider {
             "nuspell" => {
-                let manifest_path = PathBuf::from(std::env::var_os("CARGO_MANIFEST_DIR").unwrap());
+                let manifest_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
                 let aff_path = manifest_path.join("vendor/en_US/en_US.aff");
 
                 let now = Instant::now();
@@ -22,7 +22,7 @@ impl Dictionary {
                 Self::Nuspell(dict)
             }
             "hunspell" => {
-                let manifest_path = PathBuf::from(std::env::var_os("CARGO_MANIFEST_DIR").unwrap());
+                let manifest_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
                 let aff_path = manifest_path.join("vendor/en_US/en_US.aff");
                 let dic_path = manifest_path.join("vendor/en_US/en_US.dic");
 
