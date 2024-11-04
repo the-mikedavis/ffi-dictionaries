@@ -41,6 +41,7 @@
             libcxx
             icu74
             gdb
+            valgrind
           ];
           CPATH = lib.makeSearchPathOutput "dev" "include" nativeBuildInputs;
           LD_LIBRARY_PATH = lib.makeLibraryPath [pkgs.stdenv.cc.cc.lib pkgs.icu74];
