@@ -1,4 +1,4 @@
-use std::ffi::{c_char, c_int, CString, OsStr};
+use std::ffi::{c_char, c_int, CStr, CString, OsStr};
 
 enum NuspellHandle {}
 
@@ -49,6 +49,13 @@ extern "C" {
 
     fn Hunspell_spell(dict: *const HunspellHandle, word: *const c_char) -> c_int;
 
+    fn Hunspell_suggest(
+        dict: *const HunspellHandle,
+        slst: *mut *mut *mut c_char,
+        word: *const c_char,
+    ) -> c_int;
+
+    fn Hunspell_free_list(dict: *const HunspellHandle, slst: *mut *mut *mut c_char, n: c_int);
 }
 
 pub struct Hunspell {
@@ -69,6 +76,21 @@ impl Hunspell {
     pub fn spell(&self, word: &str) -> bool {
         let word = CString::new(word).unwrap();
         unsafe { Hunspell_spell(self.inner.cast_const(), word.as_ptr()) != 0 }
+    }
+    pub fn suggest(&self, word: &str, out: &mut Vec<String>) {
+        out.clear();
+        let word = CString::new(word).unwrap();
+        unsafe {
+            let mut list = std::ptr::null_mut();
+            let n = Hunspell_suggest(self.inner.cast_const(), &mut list, word.as_ptr()) as c_int;
+            if n != 0 {
+                for i in 0..n {
+                    let item = CStr::from_ptr(*list.offset(i.try_into().unwrap()));
+                    out.push(String::from(item.to_str().unwrap()));
+                }
+                Hunspell_free_list(self.inner.cast_const(), &mut list, n as c_int);
+            }
+        }
     }
 }
 
@@ -109,5 +131,9 @@ mod tests {
         assert!(dict.spell("world"));
 
         assert!(!dict.spell("exmaple"));
+
+        let mut suggestions = Vec::new();
+        dict.suggest("adveenture", &mut suggestions);
+        assert!(suggestions.contains(&"adventure".to_string()));
     }
 }
