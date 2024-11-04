@@ -25,8 +25,7 @@ impl Nuspell {
         }
     }
 
-    pub fn spell(&self, word: &str) -> bool {
-        let word = CString::new(word).unwrap();
+    pub fn spell(&self, word: &CStr) -> bool {
         unsafe { Nuspell_spell(self.inner.cast_const(), word.as_ptr()) != 0 }
     }
 }
@@ -73,10 +72,10 @@ impl Hunspell {
         }
     }
 
-    pub fn spell(&self, word: &str) -> bool {
-        let word = CString::new(word).unwrap();
+    pub fn spell(&self, word: &CStr) -> bool {
         unsafe { Hunspell_spell(self.inner.cast_const(), word.as_ptr()) != 0 }
     }
+
     pub fn suggest(&self, word: &str, out: &mut Vec<String>) {
         out.clear();
         let word = CString::new(word).unwrap();
@@ -114,10 +113,10 @@ mod tests {
         let aff_path = manifest_path.join("vendor/en_US/en_US.aff");
         let dict = Nuspell::new(aff_path.as_os_str());
 
-        assert!(dict.spell("hello"));
-        assert!(dict.spell("world"));
+        assert!(dict.spell(c"hello"));
+        assert!(dict.spell(c"world"));
 
-        assert!(!dict.spell("exmaple"));
+        assert!(!dict.spell(c"exmaple"));
     }
 
     #[test]
@@ -127,10 +126,10 @@ mod tests {
         let dic_path = manifest_path.join("vendor/en_US/en_US.dic");
         let dict = Hunspell::new(aff_path.as_os_str(), dic_path.as_os_str());
 
-        assert!(dict.spell("hello"));
-        assert!(dict.spell("world"));
+        assert!(dict.spell(c"hello"));
+        assert!(dict.spell(c"world"));
 
-        assert!(!dict.spell("exmaple"));
+        assert!(!dict.spell(c"exmaple"));
 
         let mut suggestions = Vec::new();
         dict.suggest("adveenture", &mut suggestions);

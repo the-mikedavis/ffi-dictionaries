@@ -1,5 +1,6 @@
-use std::path::PathBuf;
+use std::ffi::CString;
 use std::time::Instant;
+use std::{ffi::CStr, path::PathBuf};
 
 use ffi_dictionaries::{Hunspell, Nuspell};
 
@@ -34,7 +35,7 @@ impl Dictionary {
         }
     }
 
-    fn spell(&self, word: &str) -> bool {
+    fn spell(&self, word: &CStr) -> bool {
         match self {
             Self::Nuspell(dict) => dict.spell(word),
             Self::Hunspell(dict) => dict.spell(word),
@@ -51,9 +52,12 @@ fn main() {
             std::process::exit(1);
         }
     };
-    let Some(word) = args.next() else {
-        eprintln!("Usage: check {{nuspell|hunspell}} WORD");
-        std::process::exit(1);
+    let word = match args.next() {
+        Some(word) => CString::new(word).unwrap(),
+        None => {
+            eprintln!("Usage: check {{nuspell|hunspell}} WORD");
+            std::process::exit(1);
+        }
     };
 
     let dict = Dictionary::new(&provider);
@@ -61,12 +65,12 @@ fn main() {
     let now = Instant::now();
     if dict.spell(&word) {
         println!(
-            "\"{word}\" is in the dictionary (checked in {}µs)",
+            "{word:?} is in the dictionary (checked in {}µs)",
             now.elapsed().as_micros()
         );
     } else {
         eprintln!(
-            "\"{word}\" is NOT in the dictionary (checked in {}µs)",
+            "{word:?} is NOT in the dictionary (checked in {}µs)",
             now.elapsed().as_micros()
         );
         std::process::exit(1);
