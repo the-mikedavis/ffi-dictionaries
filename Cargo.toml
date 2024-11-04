@@ -8,8 +8,6 @@ edition = "2021"
 [dependencies]
 
 [dev-dependencies]
-# benchmarking
-brunch = "0.5"
 once_cell = "1.19"
 
 [build-dependencies]
