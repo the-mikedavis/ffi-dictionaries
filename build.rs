@@ -29,7 +29,7 @@ fn main() {
     println!("cargo:rustc-link-lib=static=nuspell");
     // Link to libc++
     println!("cargo:rustc-link-lib=stdc++");
-    // Link to ICU4C, specifically icu-cu which Nuspell mentions in
+    // Link to ICU4C, specifically icu-uc which Nuspell mentions in
     // `nuspell.pc.in`.
     println!("cargo:rustc-link-lib=icuuc");
 
@@ -43,7 +43,6 @@ fn main() {
         let path = src_path.join(entry.file_name());
         println!("cargo:rerun-if-changed={}", path.to_str().unwrap());
     }
-
 
     config
         .cpp(true)
