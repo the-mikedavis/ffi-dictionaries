@@ -9,6 +9,13 @@ extern "C" {
 
     fn Nuspell_spell(dict: *const NuspellHandle, word: *const c_char) -> c_int;
 
+    fn Nuspell_suggest(
+        dict: *const NuspellHandle,
+        slst: *mut *mut *mut c_char,
+        word: *const c_char,
+    ) -> c_int;
+
+    fn Nuspell_free_list(slst: *mut *mut *mut c_char, n: c_int);
 }
 
 pub struct Nuspell {
@@ -27,6 +34,21 @@ impl Nuspell {
 
     pub fn spell(&self, word: &CStr) -> bool {
         unsafe { Nuspell_spell(self.inner.cast_const(), word.as_ptr()) != 0 }
+    }
+
+    pub fn suggest(&self, word: &CStr, out: &mut Vec<String>) {
+        out.clear();
+        unsafe {
+            let mut list = std::ptr::null_mut();
+            let n = Nuspell_suggest(self.inner.cast_const(), &mut list, word.as_ptr());
+            if n != 0 {
+                for i in 0..n {
+                    let item = CStr::from_ptr(*list.offset(i.try_into().unwrap()));
+                    out.push(String::from(item.to_str().unwrap()));
+                }
+                Nuspell_free_list(&mut list, n);
+            }
+        }
     }
 }
 
@@ -76,9 +98,8 @@ impl Hunspell {
         unsafe { Hunspell_spell(self.inner.cast_const(), word.as_ptr()) != 0 }
     }
 
-    pub fn suggest(&self, word: &str, out: &mut Vec<String>) {
+    pub fn suggest(&self, word: &CStr, out: &mut Vec<String>) {
         out.clear();
-        let word = CString::new(word).unwrap();
         unsafe {
             let mut list = std::ptr::null_mut();
             let n = Hunspell_suggest(self.inner.cast_const(), &mut list, word.as_ptr()) as c_int;
@@ -117,6 +138,10 @@ mod tests {
         assert!(dict.spell(c"world"));
 
         assert!(!dict.spell(c"exmaple"));
+
+        let mut suggestions = Vec::new();
+        dict.suggest(c"adveenture", &mut suggestions);
+        assert!(suggestions.contains(&"adventure".to_string()));
     }
 
     #[test]
@@ -132,7 +157,7 @@ mod tests {
         assert!(!dict.spell(c"exmaple"));
 
         let mut suggestions = Vec::new();
-        dict.suggest("adveenture", &mut suggestions);
+        dict.suggest(c"adveenture", &mut suggestions);
         assert!(suggestions.contains(&"adventure".to_string()));
     }
 }
